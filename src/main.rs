@@ -1,39 +1,27 @@
-use std::fs;
-use std::io;
 use std::env;
 use std::process;
 
-struct Config {
-    command: String,
-    file_path: String,
-}
-
-impl Config {
-    fn build(args: &[String]) -> Result<Config, &'static str> {
-        if args.len() < 3 {
-            return Err("not enough arguments");
-        }
-
-        let command = args[1].clone();
-        let file_path = args[2].clone();
-
-        Ok(Config { command, file_path })
-    }
-}
+use unlock_bit::Config;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
 
+    // Returns command line arguments in a config structure.
+    // Uses unwrap_or_else, which is defined on Result<T, E> by the standard library. 
+    // Using unwrap_or_else allows us to define some custom, non-panic! error handling. 
+    // If the Result is an Ok value, this method returns the inner value Ok. 
+    // However, if the value is an Err value unwrap_or_else will pass the inner value of the Err, 
+    // which in this case is the static string "not enough arguments"
     let config = Config::build(&args).unwrap_or_else(|err| {
-        println!("Problem parsing arguments: {err}");
+        println!("Problem parsing arguments: {}", err);
         process::exit(1);
     });
 
-    let contents = fs::read_to_string(config.file_path)
-        .expect("Something went wrong reading the file");
+    if let Err(e) = unlock_bit::run(config) {
+        println!("Application error: {}", e);
+        process::exit(1);
+        
+    }
 
-    println!("Welcome to UnlockBit, we will make sure to encrypt your data and (hopefully) retrieve it");
-    println!("You specified {} command", config.command);
-    println!("With text:\n{}", contents);
 }
 

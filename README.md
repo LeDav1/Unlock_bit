@@ -32,8 +32,10 @@ I/O calls and best practices are taken from [Rust's documentation on I/O](https:
 cargo run -- command path
 ```
 
-```rust
+Example
 
+```rust
+cargo run -- encrypt path 
 ```
 
 ## Coding practices
