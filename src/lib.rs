@@ -1,5 +1,8 @@
-use std::error::Error;
-use std::fs;
+mod enc;
+
+use std::{error::Error, path::Path};
+
+use crate::enc::{encrypt_aes, decrypt_aes};
 
 // I/O functions and other things that might fail should return a Result<T, E> in their signatures.
 // Please follow https://doc.rust-lang.org/book/ch12-03-improving-error-handling-and-modularity.html
@@ -32,11 +35,34 @@ impl Config {
 // function named run that will hold all the logic currently in the main function 
 // that isn’t involved with setting up configuration or handling errors.
 pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
-    let contents = fs::read_to_string(config.file_path)?; // on an error, ? will return the error value from the current function for the caller to handle. (main)
-
+    let path = Path::new(config.file_path.as_str());
+    assert!(path.exists()); // If assertion is raised, program stops
+    
     println!("Welcome to UnlockBit, we will make sure to encrypt your data and (hopefully) retrieve it");
     println!("You specified {} command", config.command);
-    println!("With text:\n{}", contents);
+    println!("Output\n");
+
+    //known values : to change later
+    let key = "9311d97f2dd4e73fea8e60d3e1130c4cdc611e47261e498e2de6647bc477d1f7";
+    let nonce = "301a35dbfce88096d1fbf0b7";
+
+    match config.command.as_str(){ 
+        "encrypt"=> {
+            if let Err(err) = encrypt_aes(&config.file_path) {
+                eprintln!("Error: {}", err);
+            } else {
+                println!("File encrypted successfully!");
+            }
+        }
+        "decrypt"=> {
+            if let Err(err) = decrypt_aes(&config.file_path, key, nonce) {
+                eprintln!("Error: {}", err);
+            } else {
+                println!("File decrypted successfully!");
+            }
+        }
+        &_ => todo!()
+    };
 
     Ok(())
 }

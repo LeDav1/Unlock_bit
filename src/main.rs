@@ -1,3 +1,5 @@
+pub mod enc;
+
 use std::env;
 use std::process;
 
