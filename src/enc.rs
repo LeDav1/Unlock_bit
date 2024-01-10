@@ -4,7 +4,7 @@ use std::fmt;
 use aes_gcm::aead::{Aead, generic_array::GenericArray, OsRng, AeadCore, KeyInit};
 use aes_gcm::Aes256Gcm;
 
-use hex::decode;
+use hex::{decode, encode};
 
 use std::fs::File;
 use std::io::{Read, Write};
@@ -31,19 +31,23 @@ pub fn encrypt_aes(file_path: &str) -> Result<(), Box<dyn std::error::Error>>
     let key = "9311d97f2dd4e73fea8e60d3e1130c4cdc611e47261e498e2de6647bc477d1f7";
     let nonce = "301a35dbfce88096d1fbf0b7";
 
-    println!("Key used : {:#}", key);
-    println!("Nonce used : {:#}", nonce);
-    
+    // Convert hex strings to bytes
+    let key_bytes = hex::decode(key)?;
+    let nonce_bytes = hex::decode(nonce)?;
+
+    println!("Key used : {:#x?}", key_bytes);
+    println!("Nonce used : {:#x?}", nonce_bytes);
+
     // Read file content
     let mut input_file = File::open(file_path)?;
     let mut input_data = Vec::new();
     input_file.read_to_end(&mut input_data)?;
 
     // Create AES-GCM encryptor
-    let cipher = Aes256Gcm::new(GenericArray::from_slice(key.as_bytes()));
+    let cipher = Aes256Gcm::new(GenericArray::from_slice(&key_bytes));
 
     // Encrypt file content
-    let ciphertext = cipher.encrypt(GenericArray::from_slice(nonce.as_bytes()), input_data.as_slice()).map_err(|e| CustomError(e))?;
+    let ciphertext = cipher.encrypt(GenericArray::from_slice(&nonce_bytes), input_data.as_slice()).map_err(|e| CustomError(e))?;
     //let ciphertext = cipher.encrypt(GenericArray::from_slice(nonce), input_data.as_slice())?;
 
     // Write encrypted content to the output file
