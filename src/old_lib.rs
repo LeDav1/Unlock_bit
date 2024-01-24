@@ -1,6 +1,6 @@
 mod enc;
 
-use std::{error::Error, fs, path::Path};
+use std::{error::Error, path::Path};
 
 use crate::enc::{encrypt_aes, decrypt_aes};
 
@@ -46,59 +46,16 @@ pub fn run(config: Config) -> Result<(), Box<dyn Error>> {
     let key = "9311d97f2dd4e73fea8e60d3e1130c4cdc611e47261e498e2de6647bc477d1f7";
     let nonce = "301a35dbfce88096d1fbf0b7";
 
-    // Check if the path is a directory
-    if path.is_dir() {
-        // Recursively encrypt or decrypt all files in the directory
-        recursive_process_directory(path, &config.command, key, nonce)?;
-    } else {
-        // Otherwise, process the single file
-        process_file(path, &config.command, key, nonce)?;
-    }
-
-    Ok(())
-}
-
-
-fn recursive_process_directory(dir_path: &Path, command: &str, key: &str, nonce: &str) -> Result<(), Box<dyn Error>> {
-    for entry in fs::read_dir(dir_path)? {
-        let entry = entry?;
-        let path = entry.path();
-
-        // Recursive call for subdirectories
-        if path.is_dir() {
-            recursive_process_directory(&path, command, key, nonce)?;
-        } else {
-            // Process individual files
-            process_file(&path, command, key, nonce)?;
-        }
-    }
-
-    Ok(())
-}
-
-
-
-fn process_file(path: &Path, command: &str, key: &str, nonce: &str) -> Result<(), Box<dyn Error>> {
-
-    let path_str = if let Some(p) = path.to_str() {
-        p
-    } else {
-        println!("Unable to convert path to string.");
-        return Ok(());
-    };
-
-    println!("Path as string: {}", path_str);
-
-    match command {
-        "encrypt" => {
-            if let Err(err) = encrypt_aes(path_str) {
+    match config.command.as_str(){ 
+        "encrypt"=> {
+            if let Err(err) = encrypt_aes(&config.file_path) {
                 eprintln!("Error: {}", err);
             } else {
                 println!("File encrypted successfully!");
             }
         }
-        "decrypt" => {
-            if let Err(err) = decrypt_aes(path_str, key, nonce) {
+        "decrypt"=> {
+            if let Err(err) = decrypt_aes(&config.file_path, key, nonce) {
                 eprintln!("Error: {}", err);
             } else {
                 println!("File decrypted successfully!");
@@ -108,6 +65,4 @@ fn process_file(path: &Path, command: &str, key: &str, nonce: &str) -> Result<()
     };
 
     Ok(())
-
 }
-

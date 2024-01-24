@@ -1,10 +1,10 @@
 use std::error::Error;
 use std::fmt;
 
-use aes_gcm::aead::{Aead, generic_array::GenericArray, OsRng, AeadCore, KeyInit};
+use aes_gcm::aead::{Aead, generic_array::GenericArray, KeyInit};
 use aes_gcm::Aes256Gcm;
 
-use hex::{decode, encode};
+use hex::{decode};
 
 use std::fs::File;
 use std::io::{Read, Write};
